@@ -14,6 +14,8 @@ from forms import CreatePostForm, NewUserForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 from flask import abort
+import email_validator
+
 
 # Get key from .env file
 # load_dotenv()
