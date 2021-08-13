@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
@@ -16,7 +16,10 @@ from functools import wraps
 from flask import abort
 
 # Get key from .env file
-load_dotenv()
+# load_dotenv()
+# When deploying to heroku  you dont need to use the load_dotenv library
+#  you can put the environment variables from herokus UI
+# like the example in the following link https://devcenter.heroku.com/articles/config-vars
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("APP_KEY")
