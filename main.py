@@ -1,4 +1,5 @@
 import os
+
 # from dotenv import load_dotenv
 
 from flask import Flask, render_template, redirect, url_for, flash
@@ -9,11 +10,19 @@ from flask_wtf import form
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import (
+    UserMixin,
+    login_user,
+    LoginManager,
+    login_required,
+    current_user,
+    logout_user,
+)
 from forms import CreatePostForm, NewUserForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 from flask import abort
+from dotenv import load_dotenv
 import email_validator
 
 
@@ -22,17 +31,18 @@ import email_validator
 # When deploying to heroku  you dont need to use the load_dotenv library
 #  you can put the environment variables from herokus UI
 # like the example in the following link https://devcenter.heroku.com/articles/config-vars
-
+load_dotenv()
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("APP_KEY")
+app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
 # CONNECT TO DB
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'sqlite:///blog.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL", "sqlite:///blog.db"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
@@ -48,6 +58,7 @@ def load_user(user_id):
 
 
 # CONFIGURE TABLES
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -102,14 +113,16 @@ class Comment(db.Model):
 
 
 # Gravatar implementation
-gravatar = Gravatar(app,
-                    size=100,
-                    rating='x',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
-                    base_url=None)
+gravatar = Gravatar(
+    app,
+    size=100,
+    rating="x",
+    default="retro",
+    force_default=False,
+    force_lower=False,
+    use_ssl=False,
+    base_url=None,
+)
 
 # User management
 
@@ -128,16 +141,20 @@ def admin_only(f):
             return f(*args, **kwargs)
         else:
             return abort(403)
+
     return decorated_function
 
 
-@app.route('/')
+@app.route("/")
 def get_all_posts():
+    print("attempt to load page")
     posts = BlogPost.query.all()
+    print("apparently loaded well the posts")
     return render_template("index.html", all_posts=posts)
+    # return "hello man"
 
 
-@app.route('/register', methods=["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     nform = NewUserForm()
 
@@ -146,13 +163,11 @@ def register():
         # Send flash messsage
         flash("You've already signed up with that email, log in instead!")
         # Redirect to /login route.
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
     if nform.validate_on_submit():
         hash_and_salted_password = generate_password_hash(
-            nform.password.data,
-            method='pbkdf2:sha256',
-            salt_length=8
+            nform.password.data, method="pbkdf2:sha256", salt_length=8
         )
         new_user = User(
             email=nform.email.data,
@@ -171,7 +186,7 @@ def register():
     return render_template("register.html", form=nform)
 
 
-@app.route('/login', methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -193,10 +208,10 @@ def login():
     return render_template("login.html", form=form)
 
 
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('get_all_posts'))
+    return redirect(url_for("get_all_posts"))
 
 
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
@@ -211,7 +226,7 @@ def show_post(post_id):
         new_comment = Comment(
             text=cform.comment.data,
             comment_author=current_user,
-            parent_post=requested_post
+            parent_post=requested_post,
         )
         db.session.add(new_comment)
         db.session.commit()
@@ -239,7 +254,7 @@ def add_new_post():
             body=form.body.data,
             img_url=form.img_url.data,
             author=current_user,
-            date=date.today().strftime("%B %d, %Y")
+            date=date.today().strftime("%B %d, %Y"),
         )
         db.session.add(new_post)
         db.session.commit()
@@ -256,7 +271,7 @@ def edit_post(post_id):
         subtitle=post.subtitle,
         img_url=post.img_url,
         author=post.author,
-        body=post.body
+        body=post.body,
     )
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
@@ -276,8 +291,8 @@ def delete_post(post_id):
     post_to_delete = BlogPost.query.get(post_id)
     db.session.delete(post_to_delete)
     db.session.commit()
-    return redirect(url_for('get_all_posts'))
+    return redirect(url_for("get_all_posts"))
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
