@@ -147,11 +147,8 @@ def admin_only(f):
 
 @app.route("/")
 def get_all_posts():
-    print("attempt to load page")
     posts = BlogPost.query.all()
-    print("apparently loaded well the posts")
     return render_template("index.html", all_posts=posts)
-    # return "hello man"
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -277,7 +274,7 @@ def edit_post(post_id):
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        post.author = edit_form.author.data
+        post.author = current_user
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
