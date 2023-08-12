@@ -1,0 +1,13 @@
+version: "3"
+services:
+  py_fblog:
+#    restart: "no"
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: py_fblog
+    ports:
+      - "5210:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
